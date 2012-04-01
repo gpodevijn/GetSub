@@ -25,6 +25,9 @@ MEDIA_EXT = [
     ".mkv",
     ".mp4",
 ]
+SUB_EXT = [
+    ".srt",
+]
 
 
 class DownloadThread(threading.Thread):
@@ -142,7 +145,7 @@ class GetSubModel():
                 subtitleGzipped = StringIO.StringIO(subtitleDecoded)
                 subtitleGzippedFile = gzip.GzipFile(fileobj=subtitleGzipped)
                 
-                fp = gio.File(self.DEST + filename[:-3] + subtitleFormat)
+                fp = gio.File(self.DEST + os.path.splitext(filename)[0] + '.' + subtitleFormat)
                 subFile = fp.replace('', False)
                 subFile.write(subtitleGzippedFile.read())
                 subFile.close()
@@ -154,12 +157,12 @@ class GetSubView():
     def __init__(self):
         pass
             
-    def print_sub_filename(self, subtitle):
-        if subtitle == None:
+    def print_sub_filename(self, subtitles, filename):
+        if subtitles == None:
             return
-        print '\n'
+        print '\nSubtitles found for ' + filename + ':'
         i = 1
-        for sub in subtitle:
+        for sub in subtitles:
             print '['+str(i)+'] '+ sub['SubFileName']
             i += 1
         
@@ -175,23 +178,27 @@ class GetSubController:
         
     def search_subtitles(self, filename):
         self.subtitles = self.model.search_subtitles(filename)
-        self.view.print_sub_filename(self.subtitles)    
+        self.view.print_sub_filename(self.subtitles, filename)
 
     def choose_subtitles(self):
         if self.subtitles:
-            self.choice = int(raw_input('Select your subtitle file : '))
+            self.choice = int(raw_input('Select your subtitle file: '))
         else:
             print '\n'+self.model.message
             self.choice = 0
-            
-            
-    
+
     def download_subtitles(self, filename):
         if self.choice and self.subtitles:
             self.model.download_subtitles(self.subtitles, self.choice, filename)
             #thread = DownloadThread(self.model, self.subtitles, self.choice, filename)
             #thread.start()
-            
+
+    def has_subtitle(self, filename):
+        for ext in SUB_EXT:
+            if os.path.exists (os.path.splitext(filename)[0] + ext):
+                return True
+        return False
+
 def main():
     usage = "usage: %prog [option] arg"
     parser = OptionParser(usage=usage, version="%prog 0.1")
@@ -205,7 +212,7 @@ def main():
     directory = options.directory
     filename = options.filename
     
-    controller = GetSubController()    
+    controller = GetSubController()
     
     if options.LANG:
         controller.model.LANG = options.LANG
@@ -219,22 +226,25 @@ def main():
                 DEST = DEST + '/'
             controller.model.DEST = DEST
     else:
-        controller.model.DEST = ''    
+        controller.model.DEST = ''
     if directory != None:
         medias = [os.path.normcase(f)
                     for f in os.listdir(directory)]
-        medias = [os.path.join(directory, f) 
+        medias = [os.path.join(directory, f)
                    for f in medias
                     if os.path.splitext(f)[1] in MEDIA_EXT]
-                    
+
         for media in medias:
+            if controller.has_subtitle(media):
+              continue;
+
             controller.search_subtitles(media)
             controller.choose_subtitles()
-            controller.download_subtitles(media)            
+            controller.download_subtitles(media)
     elif filename != None:
         controller.search_subtitles(filename)
         controller.choose_subtitles()
-        controller.download_subtitles(filename) 
+        controller.download_subtitles(filename)
     
 if __name__ == "__main__":
     main() 
