@@ -155,12 +155,12 @@ class GetSubView():
     def __init__(self):
         pass
 
-    def print_sub_filename(self, subtitle):
-        if subtitle == None:
+    def print_sub_filename(self, subtitles, filename):
+        if subtitles == None:
             return
-        print '\n'
+        print '\nSubtitles found for ' + filename + ':'
         i = 1
-        for sub in subtitle:
+        for sub in subtitles:
             print '['+str(i)+'] '+ sub['SubFileName']
             i += 1
 
@@ -175,11 +175,11 @@ class GetSubController:
 
     def search_subtitles(self, filename):
         self.subtitles = self.model.search_subtitles(filename)
-        self.view.print_sub_filename(self.subtitles)
+        self.view.print_sub_filename(self.subtitles, filename)
 
     def choose_subtitles(self):
         if self.subtitles:
-            self.choice = int(raw_input('Select your subtitle file : '))
+            self.choice = int(raw_input('Select your subtitle file: '))
         else:
             print '\n'+self.model.message
             self.choice = 0
