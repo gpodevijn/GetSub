@@ -143,7 +143,7 @@ class GetSubModel():
                 subtitleGzipped = StringIO.StringIO(subtitleDecoded)
                 subtitleGzippedFile = gzip.GzipFile(fileobj=subtitleGzipped)
 
-                fp = gio.File(self.DEST + filename[:-3] + subtitleFormat)
+                fp = gio.File(self.DEST + os.path.splitext(filename)[0] + '.' + subtitleFormat)
                 subFile = fp.replace('', False)
                 subFile.write(subtitleGzippedFile.read())
                 subFile.close()
