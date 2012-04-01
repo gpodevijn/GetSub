@@ -45,7 +45,7 @@ class DownloadThread(threading.Thread):
         self.model.download_subtitles(self.subtitles, self.choice, self.filename)
         self.model.lock.release()
         self._done = True
-    
+
     @property
     def done(self):
         """ Thread-safe property to know whether the query is done or not """
@@ -53,7 +53,6 @@ class DownloadThread(threading.Thread):
         res = self._done
         self._lock.release()
         return res
-
 
 class GetSubModel():
     def __init__(self):
@@ -67,7 +66,7 @@ class GetSubModel():
         self.lock = threading.Lock()
         self.DEST = None
         self.LANG = None
-        
+
     def log_in(self):
         # already logged ?
         if self.token:
@@ -77,7 +76,7 @@ class GetSubModel():
                 pass
             if result and result['status'] == OK200:
                 return True
-        try: 
+        try:
             isLogged = self.server.LogIn(self.username, self.password, self.LANG, USER_AGENT)
         except:
             pass
@@ -85,21 +84,20 @@ class GetSubModel():
             self.token = isLogged['token']
             if self.token:
                 return True
-        
+
         self.message = 'Cannot contact opensubtitle.org'
-        
+
         return False
-        
+
     def search_subtitles(self, filename):
-        
         self.message = ''
         self.hash, self.size = hashFile(filename)
-        
+
         if self.log_in():
-            searchdata = {'sublanguageid': self.LANG, 
-                          'moviehash'    : self.hash, 
+            searchdata = {'sublanguageid': self.LANG,
+                          'moviehash'    : self.hash,
                           'moviebytesize': str(self.size)}
-            
+
             try:
                 result = self.server.SearchSubtitles(self.token, [searchdata])
             except xmlrpclib.ProtocolError:
@@ -114,19 +112,19 @@ class GetSubModel():
 
     def get_subtitleId_from_subtitle(self, subtitles, index):
         return subtitles[index-1]['IDSubtitleFile']
-    
+
     def get_subFormat_from_subtitle(self, subtitles, index):
         return subtitles[index-1]['SubFormat']
-        
+
     def download_subtitles(self, subtitles, choice, filename):
         self.message = ''
-        
+
         if choice == '0':
             return
-            
+
         subtitleId = self.get_subtitleId_from_subtitle(subtitles, choice)
         subtitleFormat = self.get_subFormat_from_subtitle(subtitles, choice)
-                
+
         if self.log_in():
             try:
                 result = self.server.DownloadSubtitles(self.token, [subtitleId])
@@ -144,7 +142,11 @@ class GetSubModel():
                 subtitleDecoded = base64.decodestring(subtitle64)
                 subtitleGzipped = StringIO.StringIO(subtitleDecoded)
                 subtitleGzippedFile = gzip.GzipFile(fileobj=subtitleGzipped)
+<<<<<<< HEAD
                 
+=======
+
+>>>>>>> 10e875d301e55ef9de067bdcbfc0ace826c67fa8
                 fp = gio.File(self.DEST + os.path.splitext(filename)[0] + '.' + subtitleFormat)
                 subFile = fp.replace('', False)
                 subFile.write(subtitleGzippedFile.read())
@@ -156,7 +158,11 @@ class GetSubModel():
 class GetSubView():
     def __init__(self):
         pass
+<<<<<<< HEAD
             
+=======
+
+>>>>>>> 10e875d301e55ef9de067bdcbfc0ace826c67fa8
     def print_sub_filename(self, subtitles, filename):
         if subtitles == None:
             return
@@ -165,24 +171,31 @@ class GetSubView():
         for sub in subtitles:
             print '['+str(i)+'] '+ sub['SubFileName']
             i += 1
-        
+
         print '[0] No one'
 
 class GetSubController:
     def __init__(self):
         self.model = GetSubModel()
         self.view = GetSubView()
-        
         self.choice = None
         self.subtitles = None
-        
+
     def search_subtitles(self, filename):
         self.subtitles = self.model.search_subtitles(filename)
         self.view.print_sub_filename(self.subtitles, filename)
 
-    def choose_subtitles(self):
+    def choose_subtitles(self, auto):
         if self.subtitles:
+<<<<<<< HEAD
             self.choice = int(raw_input('Select your subtitle file: '))
+=======
+            if not auto:
+                self.choice = int(raw_input('Select your subtitle file: '))
+            else:
+                print 'Auto select first'
+                self.choice = 1
+>>>>>>> 10e875d301e55ef9de067bdcbfc0ace826c67fa8
         else:
             print '\n'+self.model.message
             self.choice = 0
@@ -206,19 +219,27 @@ def main():
     parser.add_option("-d", "--dir", dest="directory", help="directory that contains every files you want to get the subtitles")
     parser.add_option("-l", "--language", dest="LANG", help="language in which you want to download subtitles (french is default)")
     parser.add_option("-D", "--destination", dest="DEST", help="the directory where you want to download your subtitles")
-    
+    parser.add_option("-a", "--auto", action="store_true", dest="auto", help="automatically pick the first subtitle available")
+
     (options, args) = parser.parse_args()
-    
+
     directory = options.directory
     filename = options.filename
+<<<<<<< HEAD
     
     controller = GetSubController()
     
+=======
+    auto = options.auto
+
+    controller = GetSubController()
+
+>>>>>>> 10e875d301e55ef9de067bdcbfc0ace826c67fa8
     if options.LANG:
         controller.model.LANG = options.LANG
     else:
         controller.model.LANG = 'fre'
-    
+
     DEST = options.DEST
     if DEST:
         if os.path.isdir(DEST):
@@ -239,6 +260,7 @@ def main():
               continue;
 
             controller.search_subtitles(media)
+<<<<<<< HEAD
             controller.choose_subtitles()
             controller.download_subtitles(media)
     elif filename != None:
@@ -246,5 +268,14 @@ def main():
         controller.choose_subtitles()
         controller.download_subtitles(filename)
     
+=======
+            controller.choose_subtitles(auto)
+            controller.download_subtitles(media)
+    elif filename != None:
+        controller.search_subtitles(filename)
+        controller.choose_subtitles(auto)
+        controller.download_subtitles(filename)
+
+>>>>>>> 10e875d301e55ef9de067bdcbfc0ace826c67fa8
 if __name__ == "__main__":
-    main() 
+    main()
