@@ -177,9 +177,13 @@ class GetSubController:
         self.subtitles = self.model.search_subtitles(filename)
         self.view.print_sub_filename(self.subtitles, filename)
 
-    def choose_subtitles(self):
+    def choose_subtitles(self, auto):
         if self.subtitles:
-            self.choice = int(raw_input('Select your subtitle file: '))
+            if not auto:
+                self.choice = int(raw_input('Select your subtitle file: '))
+            else:
+                print 'Auto select first'
+                self.choice = 1
         else:
             print '\n'+self.model.message
             self.choice = 0
@@ -203,11 +207,13 @@ def main():
     parser.add_option("-d", "--dir", dest="directory", help="directory that contains every files you want to get the subtitles")
     parser.add_option("-l", "--language", dest="LANG", help="language in which you want to download subtitles (french is default)")
     parser.add_option("-D", "--destination", dest="DEST", help="the directory where you want to download your subtitles")
+    parser.add_option("-a", "--auto", action="store_true", dest="auto", help="automatically pick the first subtitle available")
 
     (options, args) = parser.parse_args()
 
     directory = options.directory
     filename = options.filename
+    auto = options.auto
 
     controller = GetSubController()
 
@@ -236,11 +242,11 @@ def main():
               continue;
 
             controller.search_subtitles(media)
-            controller.choose_subtitles()
+            controller.choose_subtitles(auto)
             controller.download_subtitles(media)
     elif filename != None:
         controller.search_subtitles(filename)
-        controller.choose_subtitles()
+        controller.choose_subtitles(auto)
         controller.download_subtitles(filename)
 
 if __name__ == "__main__":
