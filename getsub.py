@@ -25,6 +25,9 @@ MEDIA_EXT = [
     ".mkv",
     ".mp4",
 ]
+SUB_EXT = [
+    ".srt",
+]
 
 
 class DownloadThread(threading.Thread):
@@ -187,6 +190,12 @@ class GetSubController:
             #thread = DownloadThread(self.model, self.subtitles, self.choice, filename)
             #thread.start()
 
+    def has_subtitle(self, filename):
+        for ext in SUB_EXT:
+            if os.path.exists (os.path.splitext(filename)[0] + ext):
+                return True
+        return False
+
 def main():
     usage = "usage: %prog [option] arg"
     parser = OptionParser(usage=usage, version="%prog 0.1")
@@ -223,6 +232,9 @@ def main():
                     if os.path.splitext(f)[1] in MEDIA_EXT]
 
         for media in medias:
+            if controller.has_subtitle(media):
+              continue;
+
             controller.search_subtitles(media)
             controller.choose_subtitles()
             controller.download_subtitles(media)
